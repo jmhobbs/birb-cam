@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"context"
 	"log"
+	"fmt"
+	"time"
 	"os/exec"
 	"path"
 )
@@ -41,7 +43,7 @@ func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
 		// keep 10 segments on disk
 		"-hls_list_size", "5",
 		"-hls_segment_type", "mpegts",
-		"-hls_segment_filename", path.Join(outputDir, "%d.ts"),
+		"-hls_segment_filename", path.Join(outputDir, fmt.Sprintf("%d_%%d.ts", time.Now().Unix())),
 		path.Join(outputDir, "index.m3u8"),
 	)
 	log.Println("Starting ffmpeg")
