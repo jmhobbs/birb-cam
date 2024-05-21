@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script src="//cdn.jsdelivr.net/npm/hls.js@1"></script>
+    <style>
+    body { 
+      text-align: center;
+      font-family: Avenir, Montserrat, Corbel, 'URW Gothic', source-sans-pro, sans-serif;
+    }
+    h1 {
+      margin: 0;
+      padding: 0;
+    }
+    #container{
+      position:absolute;
+      height:80%;
+      width:80%;
+      max-width: 1920px;
+      max-height: 1080px;
+      overflow: hidden;
+      margin-left: 10%;
+    }
+    video {
+      width: 100%;
+      max-height: 100%;
+      max-width: 100%;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>BIRB CAM</h1>
+    <p>Hastily assembled by <a href="https://noc.social/@jmhobbs">@jmhobbs</a></p>
+
+    <div id="container"><video id="video" controls autoplay muted></video></div>
+    <script>
+      if (Hls.isSupported()) {
+        var video = document.getElementById('video');
+        var hls = new Hls();
+        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+          video.play();
+        });
+        hls.on(Hls.Events.ERROR, console.error);
+        hls.loadSource('index.m3u8');
+        hls.attachMedia(video);
+      } else {
+        console.error('HLS is not supported');
+      }
+    </script>
+  </body>
+</html>
