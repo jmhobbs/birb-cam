@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"context"
-	"log"
 	"fmt"
-	"time"
+	"log"
 	"os/exec"
 	"path"
+	"time"
 )
 
 func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
@@ -26,6 +26,8 @@ func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
 		"-copyts",
 		// convert to h264 for firefox
 		"-vcodec", "libx264",
+		// scale to 1/2 source
+		"-filter:v", "scale=960:-1",
 		// output as fragment on each keyframe
 		"-movflags", "frag_keyframe+empty_moov",
 		// drop audio
