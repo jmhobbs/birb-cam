@@ -64,10 +64,10 @@ func httpServer(ctx context.Context, outputDir string) {
 		c.ReadMessage()
 	})
 
-	http.HandleFunc("/index.m3u8", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/x-mpegURL")
+	http.HandleFunc("/index.mpd", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/dash+xml")
 		w.Header().Set("Cache-Control", "max-age=5")
-		http.ServeFile(w, r, path.Join(outputDir, "index.m3u8"))
+		http.ServeFile(w, r, path.Join(outputDir, "index.mpd"))
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -78,9 +78,8 @@ func httpServer(ctx context.Context, outputDir string) {
 			return
 		}
 
-		if strings.HasSuffix(r.URL.Path, ".ts") {
-			w.Header().Set("Content-Type", "video/mp2ts")
-			w.Header().Set("Cache-Control", "max-age=3600")
+		if strings.HasSuffix(r.URL.Path, ".m4s") {
+			w.Header().Set("Cache-Control", "max-age=30")
 			http.ServeFile(w, r, path.Join(outputDir, r.URL.Path))
 			return
 		}

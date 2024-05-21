@@ -47,33 +47,17 @@
     </p>
     <p id="error"></p>
     <div id="container"><video id="video" controls autoplay muted></video></div>
+
+    <script src="http://cdn.dashjs.org/v4.7.4/dash.all.min.js"></script>
     <script>
-      var error = document.getElementById("error");
-      var clearErrorTimout = null;
+      (function(){
+          var url = "index.mpd";
+          var player = dashjs.MediaPlayer().create();
+          player.initialize(document.querySelector("#video"), url, true);
+      })();
+    </script>
 
-      if (Hls.isSupported()) {
-        var video = document.getElementById('video');
-        var hls = new Hls();
-        hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-          video.play();
-        });
-        hls.on(Hls.Events.ERROR, function (_, data) {
-          console.error(data);
-          error.innerText = data.error.message;
-          error.style.display = "block";
-          if (clearErrorTimout) {
-            clearTimeout(clearErrorTimout);
-          }
-          clearErrorTimout = setTimeout(() => {
-            error.style.display = "none";
-          }, 5000);
-        });
-        hls.loadSource('index.m3u8');
-        hls.attachMedia(video);
-      } else {
-        console.error('HLS is not supported');
-      }
-
+    <script>
       const count = document.getElementById("count");
 
       const wsUrl = new URL("/ws", window.location.href);

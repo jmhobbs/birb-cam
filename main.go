@@ -55,12 +55,12 @@ func main() {
 func cleanup(outputDir string) {
 	log.Println("Cleaning up HLS segments")
 
-	err := os.Remove(path.Join(outputDir, "index.m3u8"))
+	err := os.Remove(path.Join(outputDir, "index.mpd"))
 	if err != nil {
-		log.Printf("unable to remove \"index.m3u8\": %v", err)
+		log.Printf("unable to remove \"index.mpd\": %v", err)
 	}
 
-	tsFiles, err := filepath.Glob(path.Join(outputDir, "*.ts"))
+	tsFiles, err := filepath.Glob(path.Join(outputDir, "*.m4s"))
 	if err != nil {
 		log.Println(err)
 		return
@@ -70,6 +70,19 @@ func cleanup(outputDir string) {
 		err = os.Remove(tsFile)
 		if err != nil {
 			log.Printf("unable to remove %q, %v:", tsFile, err)
+		}
+	}
+
+	tmpFiles, err := filepath.Glob(path.Join(outputDir, "*.m4s.tmp"))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	for _, tmpFile := range tmpFiles {
+		err = os.Remove(tmpFile)
+		if err != nil {
+			log.Printf("unable to remove %q, %v:", tmpFile, err)
 		}
 	}
 }
