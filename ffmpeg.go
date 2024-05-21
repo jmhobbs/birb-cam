@@ -20,9 +20,6 @@ func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
 		"-rtsp_transport", "tcp",
 		// heres our source
 		"-i", rtspURL,
-		// passthrough video sync
-		// on newer ffmpeg this is "-fps_mode passthrough"
-		"-vsync", "0",
 		// copy timestamps from rtsp stream
 		"-copyts",
 		// convert to h264 for firefox
@@ -31,13 +28,18 @@ func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
 		"-movflags", "frag_keyframe+empty_moov",
 		// drop audio
 		"-an",
+		// fixed frame rate of 30
+		"-r", "30",
+		// set keyframe interval
+		"-g", "30",
+		"-keyint_min", "30",
 		// HLS should delete own segments and append as they go
 		"-hls_flags", "delete_segments+append_list",
 		"-f", "hls",
-		// try to make 1 second segments
-		"-hls_time", "1",
+		// try to make 3 second segments
+		"-hls_time", "3",
 		// keep 10 segments on disk
-		"-hls_list_size", "10",
+		"-hls_list_size", "5",
 		"-hls_segment_type", "mpegts",
 		"-hls_segment_filename", path.Join(outputDir, "%d.ts"),
 		path.Join(outputDir, "index.m3u8"),
