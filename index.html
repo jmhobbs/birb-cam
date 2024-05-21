@@ -1,6 +1,8 @@
 <!DOCTYPE HTML>
 <html>
   <head>
+    <title>Birb Cam™</title>
+    <!-- https://github.com/jmhobbs/birb-cam -->
     <script src="//cdn.jsdelivr.net/npm/hls.js@1"></script>
     <style>
     body { 
@@ -25,26 +27,61 @@
       max-height: 100%;
       max-width: 100%;
     }
+    #error {
+      display: none;
+      border: 1px solid red;
+      background: lightpink;
+      color: black;
+      padding: 10px 0;
+      max-width: 80%;
+      margin-left: 10%;
+    }
     </style>
   </head>
   <body>
     <h1>BIRB CAM</h1>
-    <p>Hastily assembled by <a href="https://noc.social/@jmhobbs">@jmhobbs</a></p>
-
+    <p>
+      Hastily assembled by <a href="https://noc.social/@jmhobbs">@jmhobbs</a> -
+      Current Birb Watchers: <strong id="count">?</strong>
+    </p>
+    <p id="error"></p>
     <div id="container"><video id="video" controls autoplay muted></video></div>
     <script>
+      var error = document.getElementById("error");
+      var clearErrorTimout = null;
+
       if (Hls.isSupported()) {
         var video = document.getElementById('video');
         var hls = new Hls();
         hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
           video.play();
         });
-        hls.on(Hls.Events.ERROR, console.error);
+        hls.on(Hls.Events.ERROR, function (_, data) {
+          console.error(data);
+          error.innerText = data.error.message;
+          error.style.display = "block";
+          if (clearErrorTimout) {
+            clearTimeout(clearErrorTimout);
+          }
+          clearErrorTimout = setTimeout(() => {
+            error.style.display = "none";
+          }, 5000);
+        });
         hls.loadSource('index.m3u8');
         hls.attachMedia(video);
       } else {
         console.error('HLS is not supported');
       }
+
+      const count = document.getElementById("count");
+
+      const wsUrl = new URL("/ws", window.location.href);
+      wsUrl.protocol = wsUrl.protocol.replace("http", "ws");
+
+      const ws = new WebSocket(wsUrl.href);
+      ws.onmessage = (event) => {
+        count.innerText = event.data;
+      };
     </script>
   </body>
 </html>

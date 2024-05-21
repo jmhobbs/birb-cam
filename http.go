@@ -6,27 +6,71 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
 	_ "embed"
+
+	"github.com/gorilla/websocket"
 )
+
+var upgrader = websocket.Upgrader{} // use default options
 
 //go:embed index.html
 var index []byte
+
+var connections map[string]*websocket.Conn = make(map[string]*websocket.Conn)
+
+func countUpdater(ctx context.Context) {
+	ticker := time.NewTicker(5 * time.Second)
+	for {
+		select {
+		case <-ctx.Done():
+			ticker.Stop()
+			return
+		case <-ticker.C:
+			count := []byte(strconv.Itoa(len(connections)))
+			for _, conn := range connections {
+				err := conn.WriteMessage(websocket.TextMessage, count)
+				if err != nil {
+					log.Printf("Error writing message to %s: %v", conn.RemoteAddr().String(), err)
+				}
+			}
+		}
+	}
+}
 
 func httpServer(ctx context.Context, outputDir string) {
 	server := &http.Server{
 		Addr: ":8080",
 	}
 
-	http.Handle("/index.m3u8", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	go countUpdater(ctx)
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		c, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			log.Println("error upgrading ws connection:", err)
+			return
+		}
+		defer c.Close()
+
+		connections[c.RemoteAddr().String()] = c
+		defer delete(connections, c.RemoteAddr().String())
+
+		// we never send client to server, so we just wait here
+		// for a read, which should be the close notification
+		c.ReadMessage()
+	})
+
+	http.HandleFunc("/index.m3u8", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-mpegURL")
 		w.Header().Set("Cache-Control", "max-age=5")
 		http.ServeFile(w, r, path.Join(outputDir, "index.m3u8"))
-	}))
+	})
 
-	http.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/" {
 			w.Header().Set("Content-Type", "text/html")
 			w.Header().Set("Cache-Control", "max-age=3600")
@@ -42,7 +86,7 @@ func httpServer(ctx context.Context, outputDir string) {
 		}
 
 		http.NotFound(w, r)
-	}))
+	})
 
 	go func() {
 		log.Println("Starting HTTP server")
