@@ -14,19 +14,20 @@
       margin: 0;
       padding: 0;
     }
+    #wrap {
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
     #container{
-      position:absolute;
-      height:80%;
-      width:80%;
-      max-width: 960px;
-      max-height: 540px;
-      overflow: hidden;
-      margin-left: 10%;
+      display: flex;
+      justify-content: center;
     }
     video {
       width: 100%;
-      max-height: 100%;
-      max-width: 100%;
+      height: 100%;
+      max-width: 1440px;
+      max-height: 810px;
     }
     #error {
       display: none;
@@ -34,19 +35,19 @@
       background: lightpink;
       color: black;
       padding: 10px 0;
-      max-width: 80%;
-      margin-left: 10%;
     }
     </style>
   </head>
   <body>
-    <h1>BIRB CAM</h1>
-    <p>
-      Hastily assembled by <a href="https://noc.social/@jmhobbs">@jmhobbs</a> -
-      Current Birb Watchers: <strong id="count">?</strong>
-    </p>
-    <p id="error"></p>
-    <div id="container"><video id="video" controls autoplay muted></video></div>
+    <div id="wrap">
+      <h1>BIRB CAM</h1>
+      <p>
+        Hastily assembled by <a href="https://noc.social/@jmhobbs">@jmhobbs</a> -
+        Current Birb Watchers: <strong id="count">?</strong>
+      </p>
+      <p id="error"></p>
+      <div id="container"><video id="video" controls autoplay muted></video></div>
+    </div>
     <script>
       var error = document.getElementById("error");
       var clearErrorTimout = null;
