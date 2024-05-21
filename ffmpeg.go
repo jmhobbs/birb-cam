@@ -28,21 +28,26 @@ func hlsConvert(ctx context.Context, outputDir, rtspURL string) {
 		"-vcodec", "libx264",
 		// scale to 1/2 source
 		"-filter:v", "scale=960:-1",
+		// fast, lossy encoding please
+		"-preset", "superfast",
+		"-crf", "40",
+		// fast encoding, low latency streaming
+		"-tune", "zerolatency",
 		// output as fragment on each keyframe
 		"-movflags", "frag_keyframe+empty_moov",
 		// drop audio
 		"-an",
-		// fixed frame rate of 30
-		"-r", "30",
-		// set keyframe interval
-		"-g", "30",
-		"-keyint_min", "30",
+		// ask to cap our bitrate
+		"-maxrate", "500K",
+		"-bufsize", "1M",
+		// rate limit frames
+		"-r", "15",
 		// HLS should delete own segments and append as they go
 		"-hls_flags", "delete_segments+append_list",
 		"-f", "hls",
-		// try to make 3 second segments
-		"-hls_time", "3",
-		// keep 10 segments on disk
+		// try to make 1 second segments
+		"-hls_time", "1",
+		// keep 5 segments on disk
 		"-hls_list_size", "5",
 		"-hls_segment_type", "mpegts",
 		"-hls_segment_filename", path.Join(outputDir, fmt.Sprintf("%d_%%d.ts", time.Now().Unix())),
